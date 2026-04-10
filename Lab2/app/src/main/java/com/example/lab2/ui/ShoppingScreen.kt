@@ -29,10 +29,11 @@ fun ShoppingScreen(viewModel: ShoppingViewModel = androidx.lifecycle.viewmodel.c
     val sheetState = rememberModalBottomSheetState()
 
     Column(modifier = Modifier.fillMaxSize().background(Color(0xFFF1F3F5)).statusBarsPadding().padding(20.dp)) {
+        // Заголовок
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(Icons.Rounded.ShoppingCart, null, tint = Color(0xFF4C6EF5), modifier = Modifier.size(32.dp))
             Spacer(Modifier.width(12.dp))
-            Text("Smart Buy", fontSize = 28.sp, fontWeight = FontWeight.Black, color = Color(0xFF212529))
+            Text("Список Покупок", fontSize = 28.sp, fontWeight = FontWeight.Black, color = Color(0xFF212529))
             Spacer(Modifier.weight(1f))
             IconButton(onClick = { showSheet = true }) {
                 Icon(Icons.Rounded.Delete, null, tint = Color(0xFFFA5252))
@@ -41,6 +42,7 @@ fun ShoppingScreen(viewModel: ShoppingViewModel = androidx.lifecycle.viewmodel.c
 
         Text("Залишилось: $remaining", color = Color(0xFF4C6EF5), fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 8.dp))
 
+        // Поле вводу
         Row(Modifier.fillMaxWidth().padding(vertical = 16.dp), verticalAlignment = Alignment.CenterVertically) {
             TextField(
                 value = inputText, onValueChange = { inputText = it },
@@ -58,13 +60,32 @@ fun ShoppingScreen(viewModel: ShoppingViewModel = androidx.lifecycle.viewmodel.c
             ) { Text("OK", fontWeight = FontWeight.Bold) }
         }
 
+        // Поділ на категорії
+        val toBuy = items.filter { !it.isBought }
+        val bought = items.filter { it.isBought }
+
         LazyColumn {
-            items(items, key = { it.id }) { item ->
-                ShoppingItemCard(item, viewModel::toggleItemStatus, viewModel::incrementQuantity, viewModel::decrementQuantity)
+            if (toBuy.isNotEmpty()) {
+                item {
+                    Text("ПОТРІБНО КУПИТИ", color = Color(0xFFADB5BD), fontWeight = FontWeight.Bold, fontSize = 13.sp, modifier = Modifier.padding(vertical = 8.dp))
+                }
+                items(toBuy, key = { it.id }) { item ->
+                    ShoppingItemCard(item, viewModel::toggleItemStatus, viewModel::incrementQuantity, viewModel::decrementQuantity)
+                }
+            }
+
+            if (bought.isNotEmpty()) {
+                item {
+                    Text("КУПЛЕНО", color = Color(0xFFADB5BD), fontWeight = FontWeight.Bold, fontSize = 13.sp, modifier = Modifier.padding(top = 16.dp, bottom = 8.dp))
+                }
+                items(bought, key = { it.id }) { item ->
+                    ShoppingItemCard(item, viewModel::toggleItemStatus, viewModel::incrementQuantity, viewModel::decrementQuantity)
+                }
             }
         }
     }
 
+    // Меню видалення
     if (showSheet) {
         ModalBottomSheet(onDismissRequest = { showSheet = false }, sheetState = sheetState) {
             Column(Modifier.fillMaxWidth().padding(24.dp)) {
